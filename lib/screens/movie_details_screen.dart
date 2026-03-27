@@ -135,6 +135,8 @@ class MovieDetailsScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            // If we have an ID, go to the immersive player. 
+                            // If NOT, we go to the player anyway, and it will show the 'Search Fallback'.
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -145,10 +147,13 @@ class MovieDetailsScreen extends StatelessWidget {
                               ),
                             );
                           },
-                          icon: const Icon(Icons.play_arrow, size: 28),
-                          label: const Text(
-                            'Watch Trailer',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          icon: Icon(
+                            movie.trailerId.isNotEmpty ? Icons.play_arrow : Icons.search_rounded, 
+                            size: 28,
+                          ),
+                          label: Text(
+                            movie.trailerId.isNotEmpty ? 'Watch Trailer' : 'Search Trailer',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
