@@ -126,33 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           HeroCarousel(movies: provider.featuredMovies),
-                          const SizedBox(height: 24),
-
-                          // 🕒 Continue Watching (Personal History)
-                          if (provider.recentlyViewed.isNotEmpty)
-                            HorizontalMovieList(
-                              title: 'Continue Watching',
-                              movies: provider.recentlyViewed,
-                            ),
-                          
-                          // 🏷️ Dynamic Genre Filter Row
-                          _buildGenreFilter(provider),
-                          const SizedBox(height: 24),
-
-                          if (provider.selectedGenreName != null) ...[
-                            if (provider.isSorting)
-                              const Padding(
-                                padding: EdgeInsets.all(32.0),
-                                child: Center(child: CircularProgressIndicator(color: Color(0xFF7B2FFF))),
-                              )
-                            else
-                              HorizontalMovieList(
-                                title: '${provider.selectedGenreName} Movies',
-                                movies: provider.genreMovies,
-                                category: 'genre', // Enables infinite scroll for this slice
-                              ),
-                            const SizedBox(height: 24),
-                          ],
+                          const SizedBox(height: 32),
 
                           // ❤️ My Watchlist — only shows up if you have saved movies
                           if (provider.watchlist.isNotEmpty)
@@ -367,64 +341,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildGenreFilter(MovieProvider provider) {
-    final List<Map<String, dynamic>> genres = [
-      {'name': 'Action', 'id': 28},
-      {'name': 'Comedy', 'id': 35},
-      {'name': 'Drama', 'id': 18},
-      {'name': 'Thriller', 'id': 53},
-      {'name': 'Horror', 'id': 27},
-      {'name': 'Sci-Fi', 'id': 878},
-    ];
-
-    return SizedBox(
-      height: 44,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: genres.length + 1,
-        itemBuilder: (context, index) {
-          final bool isAll = index == 0;
-          final String name = isAll ? 'All Tamil' : genres[index - 1]['name'];
-          final int? id = isAll ? null : genres[index - 1]['id'];
-          final bool isSelected = provider.selectedGenreName == name || (isAll && provider.selectedGenreName == null);
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: GestureDetector(
-              onTap: () => provider.setGenre(id, isAll ? null : name),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF7B2FFF) : Colors.grey.shade900.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected ? const Color(0xFF7B2FFF) : Colors.white.withOpacity(0.1),
-                    width: 1.5,
-                  ),
-                  boxShadow: isSelected ? [
-                    BoxShadow(color: const Color(0xFF7B2FFF).withOpacity(0.3), blurRadius: 8, spreadRadius: 1)
-                  ] : [],
-                ),
-                child: Center(
-                  child: Text(
-                    name,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey.shade400,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }
