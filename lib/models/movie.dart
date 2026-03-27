@@ -4,6 +4,7 @@ class Movie {
   final String originalTitle;
   final String posterUrl;
   final String backdropUrl;
+  final String? logoUrl; // PNG Official Logo Branding
   final String overview;
   final double rating;
   final String releaseDate;
@@ -17,6 +18,7 @@ class Movie {
     required this.originalTitle,
     required this.posterUrl,
     required this.backdropUrl,
+    this.logoUrl,
     required this.overview,
     required this.rating,
     required this.releaseDate,
@@ -35,6 +37,7 @@ class Movie {
       'releaseDate': releaseDate,
       'posterUrl': posterUrl,
       'backdropUrl': backdropUrl,
+      'logoUrl': logoUrl,
       'trailerId': trailerId,
       'categories': categories,
       'watchProviders': watchProviders,
@@ -51,6 +54,7 @@ class Movie {
       releaseDate: json['releaseDate'] ?? '',
       posterUrl: json['posterUrl'] ?? '',
       backdropUrl: json['backdropUrl'] ?? '',
+      logoUrl: json['logoUrl'],
       trailerId: json['trailerId'] ?? '',
       categories: List<String>.from(json['categories'] ?? []),
       watchProviders: List<String>.from(json['watchProviders'] ?? []),

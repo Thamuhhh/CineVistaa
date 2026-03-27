@@ -184,22 +184,35 @@ class MovieProvider with ChangeNotifier {
         final updatedCategories = {...existing.categories, ...movie.categories}.toList();
         unifiedMap[movie.id] = Movie(
           id: existing.id,
-          title: existing.title,
-          originalTitle: existing.originalTitle,
-          posterUrl: existing.posterUrl,
-          backdropUrl: existing.backdropUrl,
-          overview: existing.overview,
-          rating: existing.rating,
-          releaseDate: existing.releaseDate,
-          trailerId: existing.trailerId,
+          title: _preferNonEmpty(existing.title, movie.title),
+          originalTitle: _preferNonEmpty(existing.originalTitle, movie.originalTitle),
+          posterUrl: _preferNonEmpty(existing.posterUrl, movie.posterUrl),
+          backdropUrl: _preferNonEmpty(existing.backdropUrl, movie.backdropUrl),
+          logoUrl: _preferOptional(existing.logoUrl, movie.logoUrl),
+          overview: _preferNonEmpty(existing.overview, movie.overview),
+          rating: existing.rating > 0 ? existing.rating : movie.rating,
+          releaseDate: _preferNonEmpty(existing.releaseDate, movie.releaseDate),
+          trailerId: _preferNonEmpty(existing.trailerId, movie.trailerId),
           categories: updatedCategories,
-          watchProviders: existing.watchProviders,
+          watchProviders: existing.watchProviders.isNotEmpty
+              ? existing.watchProviders
+              : movie.watchProviders,
         );
       } else {
         unifiedMap[movie.id] = movie;
       }
     }
     _allMovies = unifiedMap.values.toList();
+  }
+
+  String _preferNonEmpty(String primary, String fallback) {
+    return primary.trim().isNotEmpty ? primary : fallback;
+  }
+
+  String? _preferOptional(String? primary, String? fallback) {
+    if (primary != null && primary.trim().isNotEmpty) return primary;
+    if (fallback != null && fallback.trim().isNotEmpty) return fallback;
+    return null;
   }
 
   // --- Watchlist Engine ---

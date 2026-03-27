@@ -1,4 +1,4 @@
-name: CineVistaa
+name: movie_review_app
 description: A modern premium movie review application.
 publish_to: 'none'
 
@@ -20,6 +20,8 @@ dependencies:
   shimmer: ^3.0.0
   curved_navigation_bar: ^1.0.6
   http: ^1.2.0
+  url_launcher: ^6.3.2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
