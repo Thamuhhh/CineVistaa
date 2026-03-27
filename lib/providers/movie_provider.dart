@@ -46,20 +46,17 @@ class MovieProvider with ChangeNotifier {
 
   Future<void> _loadInitialData() async {
     _isLoading = true;
+    _allMovies = [];
     notifyListeners();
 
     try {
       // Reset page tracking
       _pageTracker.updateAll((key, value) => 1);
 
-      final results = await Future.wait([
-        _api.fetchNowPlaying(page: 1),
-        _api.fetchTrending(page: 1),
-        _api.fetchTopRated(page: 1),
-        _api.fetchPopular(page: 1),
-      ]);
-
-      _mergeMovies(results.expand((x) => x).toList());
+      await _loadHomeCategory(() => _api.fetchNowPlaying(page: 1));
+      await _loadHomeCategory(() => _api.fetchTrending(page: 1));
+      await _loadHomeCategory(() => _api.fetchTopRated(page: 1));
+      await _loadHomeCategory(() => _api.fetchPopular(page: 1));
       
       // Load persistent state
       await Future.wait([
@@ -72,6 +69,18 @@ class MovieProvider with ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _loadHomeCategory(Future<List<Movie>> Function() loader) async {
+    try {
+      final results = await loader();
+      if (results.isNotEmpty) {
+        _mergeMovies(results);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Home category load error: $e');
+    }
   }
 
   // --- Recently Viewed (History) Engine ---

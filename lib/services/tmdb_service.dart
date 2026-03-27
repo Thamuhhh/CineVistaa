@@ -7,6 +7,9 @@ class TmdbService {
   static const String _apiKey = 'cdef1e87093b92da3dcf8e7032daf61c';
   static const String _baseUrl = 'https://api.themoviedb.org/3';
   static const String _imageBase = 'https://image.tmdb.org/t/p';
+  static const Duration _requestTimeout = Duration(seconds: 12);
+  static const int _maxMovieResults = 16;
+  static const int _movieBuildBatchSize = 4;
 
   // Fetch a list of movies from any TMDB endpoint with pagination
   Future<List<Movie>> _fetchMovies(String endpoint, List<String> categories, {int page = 1, String? language}) async {
@@ -23,7 +26,7 @@ class TmdbService {
       final uri = Uri.parse(
         '$_baseUrl$endpoint${connector}api_key=$_apiKey$langParam&region=IN&page=$page',
       );
-      final response = await http.get(uri);
+      final response = await _getWithRetry(uri);
       if (response.statusCode != 200) return [];
 
       final data = json.decode(response.body);
@@ -32,11 +35,7 @@ class TmdbService {
       // Always prioritize Tamil in the results for this specific app
       _sortResultsTamilFirst(results);
 
-      // Fetch details and trailers in parallel
-      final movies = await Future.wait(
-        results.take(20).map((json) => _buildMovie(json, categories)),
-      );
-      return movies.whereType<Movie>().toList();
+      return _buildMoviesSafely(results, categories);
     } catch (e) {
       return [];
     }
@@ -177,6 +176,52 @@ class TmdbService {
     } catch (e) {
       return [];
     }
+  }
+
+  Future<List<Movie>> _buildMoviesSafely(List results, List<String> categories) async {
+    final builtMovies = <Movie>[];
+    final limitedResults = results.take(_maxMovieResults).cast<Map<String, dynamic>>().toList();
+
+    for (int i = 0; i < limitedResults.length; i += _movieBuildBatchSize) {
+      final batch = limitedResults.skip(i).take(_movieBuildBatchSize);
+      final batchResults = await Future.wait(
+        batch.map((json) => _buildMovieSafely(json, categories)),
+      );
+      builtMovies.addAll(batchResults.whereType<Movie>());
+    }
+
+    return builtMovies;
+  }
+
+  Future<Movie?> _buildMovieSafely(Map<String, dynamic> json, List<String> categories) async {
+    try {
+      return await _buildMovie(json, categories);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<http.Response> _getWithRetry(Uri uri, {int maxAttempts = 3}) async {
+    http.Response? lastResponse;
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        final response = await http.get(uri).timeout(_requestTimeout);
+        if (response.statusCode == 429 || response.statusCode >= 500) {
+          lastResponse = response;
+        } else {
+          return response;
+        }
+      } catch (e) {
+        if (attempt == maxAttempts) rethrow;
+      }
+
+      if (attempt < maxAttempts) {
+        await Future.delayed(Duration(milliseconds: 450 * attempt));
+      }
+    }
+
+    return lastResponse ?? http.Response('', 500);
   }
 
   // Get YouTube trailer ID for a specific movie

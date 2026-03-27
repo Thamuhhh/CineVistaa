@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Consumer<MovieProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading) {
+        if (provider.isLoading && provider.allMovies.isEmpty) {
           // Extremely premium geometric shimmer sequence rendering precisely over the ultimate movie layout spots
           return Scaffold(
             backgroundColor: Colors.black,
